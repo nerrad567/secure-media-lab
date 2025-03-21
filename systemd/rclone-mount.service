@@ -1,0 +1,12 @@
+[Unit]
+Description=Rclone B2 Mount
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/rclone mount b2crypt: /mnt/b2 --allow-other --transfers 16 --checkers 16 --b2-chunk-size 96M --vfs-cache-mode writes --buffer-size 64M
+Restart=on-failure
+User=darren
+
+[Install]
+WantedBy=multi-user.target

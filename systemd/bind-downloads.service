@@ -1,0 +1,16 @@
+[Unit]
+Description=Bind Mount B2 Downloads
+After=rclone-mount.service network-online.target
+Requires=rclone-mount.service
+
+[Service]
+Type=oneshot
+ExecStartPre=/bin/bash -c "until mountpoint -q /mnt/b2 && [ -d /mnt/b2/downloads ]; do sleep 1; done"
+ExecStart=/bin/mount --bind /mnt/b2/downloads /home/darren/media-stack/downloads
+ExecStartPost=/bin/sleep 1
+ExecStartPost=/bin/mountpoint -q /home/darren/media-stack/downloads
+RemainAfterExit=yes
+TimeoutStartSec=60
+
+[Install]
+WantedBy=multi-user.target

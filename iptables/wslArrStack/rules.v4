@@ -1,0 +1,25 @@
+*filter
+:INPUT DROP [0:0]
+:FORWARD DROP [0:0]
+:OUTPUT ACCEPT [9:704]
+-A INPUT -m conntrack --ctstate INVALID -j DROP
+-A INPUT -i lo -j ACCEPT
+-A INPUT -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+-A INPUT -i wg0 -p tcp -m tcp --dport 9696 -j ACCEPT
+-A INPUT -i wg0 -p tcp -m tcp --dport 8989 -j ACCEPT
+-A INPUT -i wg0 -p tcp -m tcp --dport 7878 -j ACCEPT
+-A INPUT -i wg0 -p tcp -m tcp --dport 8686 -j ACCEPT
+-A INPUT -i wg0 -p tcp -m tcp --dport 8787 -j ACCEPT
+-A INPUT -i wg0 -p tcp -m tcp --dport 5055 -j ACCEPT
+-A INPUT -i wg0 -p tcp -m tcp --dport 5656 -j ACCEPT
+-A INPUT -i wg0 -p icmp --icmp-type echo-request -s 10.0.0.0/24 -j ACCEPT
+-A INPUT -i wg0 -p icmp --icmp-type echo-reply -s 10.0.0.0/24 -j ACCEPT
+#-A INPUT -p tcp -m tcp --dport 8096 -j ACCEPT
+-A INPUT -p tcp --dport 8096 -s 192.168.0.0/24 -j ACCEPT
+-A INPUT -p tcp --dport 5055 -s 192.168.0.0/24 -j ACCEPT
+-A INPUT -p tcp --dport 8096 -s 10.0.0.0/24 -j ACCEPT
+-A INPUT -p tcp --dport 80 -s 10.0.0.0/24 -j ACCEPT
+-A INPUT -i wg0 -p tcp --dport 22 -s 10.0.0.0/24 -j ACCEPT
+
+COMMIT
+# Completed on Mon Mar 17 11:16:53 2025

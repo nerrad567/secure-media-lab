@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Portal</title>
+    <style>
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+
+        body {
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Container */
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        .header {
+            padding: 20px;
+            background: rgba(20, 20, 30, 0.9);
+            border-bottom: 1px solid #333;
+            text-align: center;
+            position: relative;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: transparent;
+            background: linear-gradient(90deg, #00d4ff, #ff00cc, #00d4ff);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            animation: gradientSweep 4s infinite ease-in-out, bounceIn 1s ease-out;
+            position: relative;
+            display: inline-block;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00d4ff, transparent);
+            animation: pulseLine 2s infinite ease-in-out;
+        }
+
+        @keyframes gradientSweep {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes bounceIn {
+            0% { transform: translateY(-50px); opacity: 0; }
+            60% { transform: translateY(10px); opacity: 1; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes pulseLine {
+            0% { transform: scaleX(0); }
+            50% { transform: scaleX(1); }
+            100% { transform: scaleX(0); }
+        }
+
+        /* Menu Wrapper (Tab + Menu) */
+        .menu-wrapper {
+            position: relative;
+        }
+
+        .menu-tab {
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 20px;
+            background: rgba(20, 20, 30, 0.9);
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            cursor: pointer;
+            z-index: 11;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #00d4ff;
+            font-size: 1rem;
+        }
+
+        .menu-tab::after {
+            content: '▼';
+        }
+
+        /* Dropdown Menu */
+        .menu {
+            position: fixed;
+            top: -300px;
+            left: 0;
+            width: 100%;
+            background: rgba(20, 20, 30, 0.95);
+            backdrop-filter: blur(5px);
+            padding: 20px;
+            transition: top 0.3s ease;
+            z-index: 10;
+        }
+
+        .menu-wrapper:hover .menu {
+            top: 0;
+        }
+
+        .menu ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .menu li {
+            margin: 0;
+        }
+
+        .menu a {
+            color: #e0e0e0;
+            text-decoration: none;
+            font-size: 1.2rem;
+            display: block;
+            padding: 10px 20px;
+            border-radius: 5px;
+            transition: background 0.3s ease, color 0.3s ease;
+        }
+
+        .menu a:hover, .menu a.active {
+            background: #00d4ff;
+            color: #0a0a0f;
+        }
+
+        /* Portal (Iframe) */
+        .portal {
+            flex: 1;
+            background: #1a1a2e;
+            border-radius: 10px;
+            margin: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            width: calc(100% - 15%);
+            max-width: calc(100% - 15%);
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Background Animation */
+        .bg-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-animation span {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: rgba(0, 212, 255, 0.2);
+            border-radius: 50%;
+            animation: drift 8s infinite ease-in-out;
+        }
+
+        @keyframes drift {
+            0% { transform: translateY(100vh) scale(0); }
+            50% { transform: translateY(50vh) scale(1); }
+            100% { transform: translateY(0) scale(0); }
+        }
+
+        .bg-animation span:nth-child(1) { left: 15%; animation-delay: 0s; }
+        .bg-animation span:nth-child(2) { left: 35%; animation-delay: 2s; }
+        .bg-animation span:nth-child(3) { left: 55%; animation-delay: 4s; }
+        .bg-animation span:nth-child(4) { left: 75%; animation-delay: 6s; }
+        .bg-animation span:nth-child(5) { left: 95%; animation-delay: 1s; }
+    </style>
+</head>
+<body>
+    <div class="bg-animation">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <div class="container">
+        <div class="header">
+            <h1>Media Portal</h1>
+            <div class="menu-wrapper">
+                <div class="menu-tab"></div>
+                <div class="menu" id="menu">
+                    <ul>
+                        <li><a href="http://10.0.0.5:8096" onclick="loadPortal(this, event)" class="active">Jellyfin</a></li>
+                        <li><a href="http://10.0.0.5:9696" onclick="loadPortal(this, event)">Prowlarr</a></li>
+                        <li><a href="http://10.0.0.5:8989" onclick="loadPortal(this, event)">Sonarr</a></li>
+                        <li><a href="http://10.0.0.5:7878" onclick="loadPortal(this, event)">Radarr</a></li>
+                        <li><a href="http://10.0.0.5:8686" onclick="loadPortal(this, event)">Lidarr</a></li>
+                        <li><a href="http://10.0.0.5:8787" onclick="loadPortal(this, event)">Readarr</a></li>
+                        <li><a href="http://10.0.0.5:5055" onclick="loadPortal(this, event)">Jellyseerr</a></li>
+                        <li><a href="http://10.0.0.5/qbittorrent" onclick="loadPortal(this, event)">qBittorrent</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="portal">
+            <iframe src="http://10.0.0.5:8096"></iframe>
+        </div>
+    </div>
+
+    <script>
+        // Load Portal and Highlight Active Link
+        function loadPortal(link, event) {
+            event.preventDefault();
+            const url = link.getAttribute('href');
+            document.querySelector('iframe').src = url;
+
+            // Remove active class from all links
+            document.querySelectorAll('.menu a').forEach(a => a.classList.remove('active'));
+            // Add active class to clicked link
+            link.classList.add('active');
+        }
+    </script>
+</body>
+</html>

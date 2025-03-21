@@ -1,0 +1,21 @@
+# Ignore log files
+*.log
+
+# Ignore JSON files
+*.json
+
+# Ignore text files
+*.txt
+
+# Ignore environment variable files
+*.env
+
+# Optional: Ignore folders like node_modules or temp
+node_modules/
+temp/
+sync_logs/
+*.log
+*.json
+*.txt
+*.env
+.\vpsSync\sync_logs\
