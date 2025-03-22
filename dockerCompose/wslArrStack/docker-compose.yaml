@@ -1,0 +1,149 @@
+services:
+  jellyfin:
+    image: jellyfin/jellyfin:latest
+    container_name: jellyfin
+    network_mode: host
+    volumes:
+      - /mnt/f/Docker/Jellyfin/config:/config
+      - /mnt/MediaSSD/Movies:/data/movies
+      - /mnt/MediaSSD/TV:/data/tv
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
+    runtime: nvidia
+    restart: unless-stopped
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr
+    container_name: prowlarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - /mnt/f/Docker/Prowlarr/config:/config
+    network_mode: host
+    restart: unless-stopped
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr
+    container_name: sonarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - /mnt/f/Docker/Sonarr/config:/config
+      - /mnt/MediaSSD/TV:/tv
+      - /mnt/StagingSSD/:/downloads
+    network_mode: host
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr
+    container_name: radarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - /mnt/f/Docker/Radarr/config:/config
+      - /mnt/MediaSSD/Movies:/movies
+      - /mnt/StagingSSD/:/downloads
+    network_mode: host
+    restart: unless-stopped
+
+  lidarr:
+    image: lscr.io/linuxserver/lidarr
+    container_name: lidarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - /mnt/f/Docker/Lidarr/config:/config
+      - /mnt/MediaSSD/Music:/music
+      - /mnt/StagingSSD/:/downloads
+    network_mode: host
+    restart: unless-stopped
+
+  readarr:
+    image: lscr.io/linuxserver/readarr:develop
+    container_name: readarr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - /mnt/f/Docker/Readarr/config:/config
+      - /mnt/MediaSSD/eBooks:/books
+      - /mnt/StagingSSD/:/downloads
+    network_mode: host
+    restart: unless-stopped
+
+  jellyseerr:
+    image: fallenbagel/jellyseerr
+    container_name: jellyseerr
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - /mnt/f/Docker/Jellyseerr/config:/app/config
+    network_mode: host
+    restart: unless-stopped
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - WATCHTOWER_CLEANUP=true  # Removes old images after updating
+      - WATCHTOWER_SCHEDULE=0 0 4 * * *  # Runs daily at 4 AM (cron format)
+      - TZ=Europe/London  # Match timezone with other services
+    restart: unless-stopped
+
+  unpackerr:
+      image: golift/unpackerr:latest
+      container_name: unpackerr
+      network_mode: host
+      volumes:
+        - /mnt/StagingSSD/:/downloads
+        - /mnt/f/Docker/Unpackerr/config:/config
+      environment:
+        - PUID=1000
+        - PGID=1000
+        - TZ=Europe/London
+        - UN_DELETE_DELAY=5m
+        - UN_INTERVAL=2m
+        # Radarr
+        - UN_RADARR_0_URL=http://10.0.0.5:7878
+        - UN_RADARR_0_API_KEY=${UN_RADARR_0_API_KEY}
+        - UN_RADARR_0_PATHS_0=/downloads/movies
+        - UN_RADARR_0_DELETE_ORIG=true
+        # Sonarr
+        - UN_SONARR_0_URL=http://10.0.0.5:8989
+        - UN_SONARR_0_API_KEY=${UN_SONARR_0_API_KEY}
+        - UN_SONARR_0_PATHS_0=/downloads/tv
+        - UN_SONARR_0_DELETE_ORIG=true
+        # Lidarr
+        - UN_LIDARR_0_URL=http://10.0.0.5:8686
+        - UN_LIDARR_0_API_KEY=${UN_LIDARR_0_API_KEY}
+        - UN_LIDARR_0_PATHS_0=/downloads/music
+        - UN_LIDARR_0_DELETE_ORIG=true
+        # Readarr
+        - UN_READARR_0_URL=http://10.0.0.5:8787
+        - UN_READARR_0_API_KEY=${UN_READARR_0_API_KEY}
+        - UN_READARR_0_PATHS_0=/downloads/ebooks
+        - UN_READARR_0_DELETE_ORIG=true
+      restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    network_mode: host
+    volumes:
+      - /mnt/f/Webserver/www:/usr/share/nginx/html:ro  # Existing web content
+      - /mnt/f/Webserver/nginx/conf.d:/etc/nginx/conf.d:ro  # Custom config
+    restart: unless-stopped
