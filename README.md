@@ -1,6 +1,6 @@
 # 🔒 secure-media-lab – Secure Home Lab & Remote Stack
 
-[![Platform](https://img.shields.io/badge/Platform-WSL2%20%7C%20Ubuntu%2024.04-blue?style=for-the-badge&logo=linux)](https://ubuntu.com)
+[![Platform](https://img.shields.io/badge/Platform-Debian%2012-blue?style=for-the-badge&logo=linux)](https://debian.org)
 ![VPN](https://img.shields.io/badge/VPN-WireGuard-88171A?style=for-the-badge&logo=wireguard&logoColor=white)
 ![Dockerized](https://img.shields.io/badge/Stack-Docker%20Containers-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![Firewall](https://img.shields.io/badge/Firewall-iptables-informational?style=for-the-badge&logo=gnuprivacyguard)
@@ -14,7 +14,7 @@
 
 This project documents my personal lab setup combining a containerized service stack, remote VPS tunneling, and automated syncing logic using Bash, PowerShell, and Linux networking tools. It allows for convenient centralized access and backup of my home media collection. Built as a learning environment, this stack helps explore system automation, secure data handling, and private infrastructure design.
 
-**🛠️ Project Timeline:** Completed initial build in one weekend + several workday evenings.
+**🛠️ Project Timeline:** Completed initial build in one weekend + several workday evenings. Originally deployed on Windows 11 + WSL2, **now migrated to a dedicated Debian 12 host** for improved stability, energy efficiency, and hardware utilization.
 
 ---
 
@@ -22,28 +22,28 @@ This project documents my personal lab setup combining a containerized service s
 
 - **Remote VPS (Ubuntu 24.04):** Hosts private services and a WireGuard server. Access is limited to a chrooted `syncuser` (access via ssh key) user with readonly bind mounts and a restricted shell with access only to rsync for file retrieval and synchronization tasks, as well as a separate sudo-enabled user authenticated via password-protected SSH keys.
 - **WireGuard VPN:** Secure peer-to-peer tunnel between VPS and multiple WireGuard clients using the 10.0.0.0/24 subnet.
-- **Docker Stack (WSL2 Ubuntu):** Self-hosted services running in isolated containers on a Windows host via WSL2.
+- **Docker Stack (Debian 12):** Self-hosted services running in isolated containers on a dedicated Debian 12 server.
 - **iptables Firewall Rules:** Rate-limiting to mitigate SSH hammering, reduce brute-force noise, and control exposure. Also used for network segmentation and service-specific access control.
 - **Reverse Proxy (nginx):** Provides secure access to services using consistent, browser-friendly URLs; prevents security warnings via clean local proxy routing.
 - **Rsync Automation Script:** Syncs files from the remote server to local storage, with persistent task-aware tracking.
 - **Download Monitoring:** Web API integration for job tracking and state inspection.
-- **PowerShell Orchestration:** Handles WSL2 startup, disk mount management, and port proxy setup.
+- **PowerShell Orchestration (Historical):** Originally used to handle WSL2 startup, disk mount management, and port proxy setup. (May still be used in limited capacity for cross-platform scripts.)
 - **Systemd Services:** Includes custom service units (e.g., for mounting encrypted remote storage via rclone) to automate key startup tasks and ensure persistent, resilient operation.
 - **Encrypted Backup:** Remote offsite storage handled by rclone, rcrypt + Backblaze B2 bucket.
+
 
 ---
 
 ### ⚙️ Tech Stack
 
-- **Platforms:** Ubuntu 24.04, Windows 11
-- **Containerization:** Docker (via WSL2)
+- **Platforms:** Debian 12 (main), Ubuntu 24.04 (VPS)
+- **Containerization:** Docker
 - **Networking:** WireGuard, iptables, rsync
-- **Languages/Scripting:** Bash, PowerShell
+- **Languages/Scripting:** Bash, PowerShell (legacy), YAML
 - **Automation & File Sync:** rsync, rclone, curl, jq
 - **Storage/Backup:** rclone + Backblaze B2 (encrypted)
 - **File Transfer:** qBittorrent Web API, SSH
 - **Reverse Proxy:** nginx
-
 ---
 
 ### 🗂️ Project Structure
@@ -73,20 +73,21 @@ This project documents my personal lab setup combining a containerized service s
                   │
              10.0.0.x/24
                   │
-┌──────┐   ┌──────▼─────┐             ┌─────────────────────┐            ┌─────────────────────┐
-│      │   │ VPS Server │             │ Windows 11 Host     │            │ LAN Client Devices  │
-│  B2  │   │ Ubuntu 24  │             │ (WireGuard Client)  │ ◀ ──────── │ - Media Clients     │
-│  BKT │◀▶│ - WG Server│◀──────────▶│ - PowerShell Script │            │                     │
-│      │   │ - Remote FS│             │ - Portproxy         │            │                     │
-└──────┘   └────▲───────┘             └──────┬──────────────┘            └─────────────────────┘
-                │                            │
-                │         Internal VPN       ▼
-                │      (10.0.0.0/24 subnet) ┌────────────────────┐
-                └─────────────────────────▶│ WSL2 (Ubuntu)      │
-                                            │ - Docker Stack     │
-                                            │ - Media Mgmt Tools │
-                                            │ - File Sync        │
-                                            └────────────────────┘
+┌──────┐   ┌──────▼─────┐
+│      │   │ VPS Server │
+│  B2  │   │ Ubuntu 24  |
+│  BKT │◀▶│ - WG Server│                  
+│      │   │ - Remote FS│                  
+└──────┘   └────▲───────┘                  
+                │                                    
+                │         Internal VPN              
+                │      (10.0.0.0/24 subnet) ┌────────────────────┐            ┌─────────────────────┐
+                └─────────────────────────▶│ Debian 12          │             │ LAN Client Devices  │
+                                            │ - Docker Stack     │  ◀ ────────│ - Media Clients     │
+                                            │ - Media Tools      │             │                     │
+                                            │ - File Sync        │             |                     |
+                                            | - WG Client        |             └─────────────────────┘
+                                            └────────────────────┘              
 
 
 Access Routes:
@@ -99,10 +100,12 @@ Access Routes:
 ---
 
 📘 Status
-This project is under continuous iteration. AI tools were used to accelerate scripting, troubleshoot configurations, and refine logic — while maintaining strong understanding of the core principles and system behavior. Built to explore DevOps, Linux networking, and OT/infrastructure crossover practices.
+This project is under continuous iteration and now runs on a dedicated Debian 12 host for improved reliability and performance.
+
 
 🔜 Next Objective:
-Migrate the current stack from Windows 11 + WSL2 to a dedicated local Debian server to improve system stability, energy efficiency, and hardware utilization — moving toward a more production-aligned environment.
+~~Migrating the current stack from Windows 11 + WSL2 to a dedicated local Debian server to improve system stability, energy efficiency, and hardware utilization — moving toward a more production-aligned environment.~~
+Upgrade hardware to improve transcoding functionality 
 
 
 ---
