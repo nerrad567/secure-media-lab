@@ -1,149 +1,186 @@
 services:
   jellyfin:
     image: jellyfin/jellyfin:latest
+    user: "${PUID}:${PGID}"
+    group_add:
+      - "105" # Host "render" group id
     container_name: jellyfin
-    network_mode: host
+    devices:
+      - /dev/dri/card0:/dev/dri/card0
+      - /dev/dri/renderD128:/dev/dri/renderD128
     volumes:
-      - /mnt/f/Docker/Jellyfin/config:/config
-      - /mnt/MediaSSD/Movies:/data/movies
-      - /mnt/MediaSSD/TV:/data/tv
+      - ${CONFIG_DIR}/jellyfin:/config
+      - ${METADATA_DIR}/jellyfin/transcodes:/data/transcodes
+      - ${METADATA_DIR}/jellyfin/trickplay:/data/trickplay
+      - ${METADATA_DIR}/jellyfin:/data/metadata
+      - ${MEDIA_DIR}/movies:/data/movies
+      - ${MEDIA_DIR}/tv:/data/tv
+      - ${MEDIA_DIR}/music:/data/music
+    ports:
+      - "8096:8096"
     environment:
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
-    runtime: nvidia
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     restart: unless-stopped
 
   prowlarr:
-    image: lscr.io/linuxserver/prowlarr
+    image: lscr.io/linuxserver/prowlarr:latest
     container_name: prowlarr
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/London
     volumes:
-      - /mnt/f/Docker/Prowlarr/config:/config
-    network_mode: host
+      - ${CONFIG_DIR}/prowlarr:/config
+    ports:
+      - "9696:9696"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     restart: unless-stopped
 
   sonarr:
-    image: lscr.io/linuxserver/sonarr
+    image: lscr.io/linuxserver/sonarr:latest
     container_name: sonarr
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/London
     volumes:
-      - /mnt/f/Docker/Sonarr/config:/config
-      - /mnt/MediaSSD/TV:/tv
-      - /mnt/StagingSSD/:/downloads
-    network_mode: host
+      - ${CONFIG_DIR}/sonarr:/config
+      - ${MEDIA_DIR}/tv:/tv
+      - ${STAGING_DIR}:/downloads
+    ports:
+      - "8989:8989"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     restart: unless-stopped
 
   radarr:
-    image: lscr.io/linuxserver/radarr
+    image: lscr.io/linuxserver/radarr:latest
     container_name: radarr
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/London
     volumes:
-      - /mnt/f/Docker/Radarr/config:/config
-      - /mnt/MediaSSD/Movies:/movies
-      - /mnt/StagingSSD/:/downloads
-    network_mode: host
+      - ${CONFIG_DIR}/radarr:/config
+      - ${MEDIA_DIR}/movies:/movies
+      - ${STAGING_DIR}:/downloads
+    ports:
+      - "7878:7878"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     restart: unless-stopped
 
   lidarr:
-    image: lscr.io/linuxserver/lidarr
+    image: lscr.io/linuxserver/lidarr:latest
     container_name: lidarr
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/London
     volumes:
-      - /mnt/f/Docker/Lidarr/config:/config
-      - /mnt/MediaSSD/Music:/music
-      - /mnt/StagingSSD/:/downloads
-    network_mode: host
+      - ${CONFIG_DIR}/lidarr:/config
+      - ${MEDIA_DIR}/music:/music
+      - ${STAGING_DIR}:/downloads
+    ports:
+      - "8686:8686"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     restart: unless-stopped
 
   readarr:
     image: lscr.io/linuxserver/readarr:develop
     container_name: readarr
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/London
     volumes:
-      - /mnt/f/Docker/Readarr/config:/config
-      - /mnt/MediaSSD/eBooks:/books
-      - /mnt/StagingSSD/:/downloads
-    network_mode: host
+      - ${CONFIG_DIR}/readarr:/config
+      - ${MEDIA_DIR}/ebooks:/books
+      - ${STAGING_DIR}:/downloads
+    ports:
+      - "8787:8787"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     restart: unless-stopped
 
   jellyseerr:
-    image: fallenbagel/jellyseerr
+    image: fallenbagel/jellyseerr:latest
     container_name: jellyseerr
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Europe/London
     volumes:
-      - /mnt/f/Docker/Jellyseerr/config:/app/config
-    network_mode: host
+      - ${CONFIG_DIR}/jellyseerr:/app/config
+    ports:
+      - "5055:5055"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    restart: unless-stopped
+
+  unpackerr:
+    image: golift/unpackerr:latest
+    container_name: unpackerr
+    volumes:
+      - ${STAGING_DIR}:/downloads
+      - ${CONFIG_DIR}/unpackerr:/config
+    ports:
+      - "5656:5656"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - UN_DELETE_DELAY=5m
+      - UN_INTERVAL=2m
+      - UN_RADARR_0_URL=http://radarr:7878
+      - UN_RADARR_0_API_KEY=${UN_RADARR_0_API_KEY}
+      - UN_RADARR_0_PATHS_0=/downloads/movies
+      - UN_RADARR_0_DELETE_ORIG=true
+      - UN_SONARR_0_URL=http://sonarr:8989
+      - UN_SONARR_0_API_KEY=${UN_SONARR_0_API_KEY}
+      - UN_SONARR_0_PATHS_0=/downloads/tv
+      - UN_SONARR_0_DELETE_ORIG=true
+      - UN_LIDARR_0_URL=http://lidarr:8686
+      - UN_LIDARR_0_API_KEY=${UN_LIDARR_0_API_KEY}
+      - UN_LIDARR_0_PATHS_0=/downloads/music
+      - UN_LIDARR_0_DELETE_ORIG=true
+      - UN_READARR_0_URL=http://readarr:8787
+      - UN_READARR_0_API_KEY=${UN_READARR_0_API_KEY}
+      - UN_READARR_0_PATHS_0=/downloads/ebooks
+      - UN_READARR_0_DELETE_ORIG=true
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    volumes:
+      - ${CONFIG_DIR}/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ${CONFIG_DIR}/nginx/www:/usr/share/nginx/html
+    ports:
+      - "80:80"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+    restart: unless-stopped
+
+  sabnzbd:
+    image: lscr.io/linuxserver/sabnzbd:latest
+    container_name: sabnzbd
+    volumes:
+      - ${CONFIG_DIR}/sabnzbd:/config
+      - ${STAGING_DIR}/sabnzb/downloads/tv:/downloads/tv
+      - ${STAGING_DIR}/sabnzb/downloads/movies:/downloads/movies
+      - ${STAGING_DIR}/sabnzb/downloads/music:/downloads/music
+      - ${STAGING_DIR}/sabnzb/incomplete:/incomplete-downloads
+      - ${STAGING_DIR}/sabnzb/downloads:/downloads
+    ports:
+      - "8080:8080"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
     restart: unless-stopped
 
   watchtower:
-    image: containrrr/watchtower
+    image: containrrr/watchtower:latest
     container_name: watchtower
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     environment:
-      - WATCHTOWER_CLEANUP=true  # Removes old images after updating
-      - WATCHTOWER_SCHEDULE=0 0 4 * * *  # Runs daily at 4 AM (cron format)
-      - TZ=Europe/London  # Match timezone with other services
-    restart: unless-stopped
-
-  unpackerr:
-      image: golift/unpackerr:latest
-      container_name: unpackerr
-      network_mode: host
-      volumes:
-        - /mnt/StagingSSD/:/downloads
-        - /mnt/f/Docker/Unpackerr/config:/config
-      environment:
-        - PUID=1000
-        - PGID=1000
-        - TZ=Europe/London
-        - UN_DELETE_DELAY=5m
-        - UN_INTERVAL=2m
-        # Radarr
-        - UN_RADARR_0_URL=http://10.0.0.5:7878
-        - UN_RADARR_0_API_KEY=${UN_RADARR_0_API_KEY}
-        - UN_RADARR_0_PATHS_0=/downloads/movies
-        - UN_RADARR_0_DELETE_ORIG=true
-        # Sonarr
-        - UN_SONARR_0_URL=http://10.0.0.5:8989
-        - UN_SONARR_0_API_KEY=${UN_SONARR_0_API_KEY}
-        - UN_SONARR_0_PATHS_0=/downloads/tv
-        - UN_SONARR_0_DELETE_ORIG=true
-        # Lidarr
-        - UN_LIDARR_0_URL=http://10.0.0.5:8686
-        - UN_LIDARR_0_API_KEY=${UN_LIDARR_0_API_KEY}
-        - UN_LIDARR_0_PATHS_0=/downloads/music
-        - UN_LIDARR_0_DELETE_ORIG=true
-        # Readarr
-        - UN_READARR_0_URL=http://10.0.0.5:8787
-        - UN_READARR_0_API_KEY=${UN_READARR_0_API_KEY}
-        - UN_READARR_0_PATHS_0=/downloads/ebooks
-        - UN_READARR_0_DELETE_ORIG=true
-      restart: unless-stopped
-
-  nginx:
-    image: nginx:alpine
-    container_name: nginx
-    network_mode: host
-    volumes:
-      - /mnt/f/Webserver/www:/usr/share/nginx/html:ro  # Existing web content
-      - /mnt/f/Webserver/nginx/conf.d:/etc/nginx/conf.d:ro  # Custom config
+      - WATCHTOWER_SCHEDULE=0 30 5 * * * # Runs at 05:30 every day
+      - WATCHTOWER_CLEANUP=true # Removes old images after updating
+      - TZ=${TZ} # Syncs timezone with other services
     restart: unless-stopped
