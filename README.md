@@ -1,4 +1,14 @@
-# secure-media-lab
+# 🔒 secure-media-lab – Secure Home Lab & Remote Stack
+
+[![Platform](https://img.shields.io/badge/Platform-WSL2%20%7C%20Ubuntu%2024.04-blue?style=for-the-badge&logo=linux)](https://ubuntu.com)
+![VPN](https://img.shields.io/badge/VPN-WireGuard-88171A?style=for-the-badge&logo=wireguard&logoColor=white)
+![Dockerized](https://img.shields.io/badge/Stack-Docker%20Containers-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Firewall](https://img.shields.io/badge/Firewall-iptables-informational?style=for-the-badge&logo=gnuprivacyguard)
+![Sync & Automation](https://img.shields.io/badge/Automation-Bash%20%7C%20PowerShell-4B275F?style=for-the-badge&logo=gnubash&logoColor=white)
+![Backups](https://img.shields.io/badge/Backups-Encrypted%20via%20rclone%20%2B%20B2-critical?style=for-the-badge&logo=veritas)
+![Status](https://img.shields.io/badge/Status-Live%20Lab-green?style=for-the-badge&logo=server)
+![Privacy](https://img.shields.io/badge/Access-Controlled%20%26%20Private-black?style=for-the-badge&logo=protonvpn)
+
 
 ## Secure Home Lab + Remote Stack with WSL2, Docker, WireGuard, and Automation Scripts
 
