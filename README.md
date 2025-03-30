@@ -107,6 +107,17 @@ Migrate the current stack from Windows 11 + WSL2 to a dedicated local Debian ser
 
 ---
 
+## 📝 Author
+
+**Darren Gray**
+Researched, developed, and refined with assistance from ChatGPT and Grok AI
+
+## 📬 Contact
+
+- **GitHub**: [@nerrad567](https://github.com/nerrad567)
+- **Email**: darren.g@outlook.com
+- **LinkedIn**: [linkedin.com/in/darren-gray-70258a169](https://www.linkedin.com/in/darren-gray-70258a169)
+
 ### 📄 License
 
 MIT
