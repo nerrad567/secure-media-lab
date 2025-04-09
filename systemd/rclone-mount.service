@@ -1,11 +1,17 @@
 [Unit]
 Description=Rclone B2 Mount
 After=network-online.target
+Before=shutdown.target
 
 [Service]
-Type=simple
+Type=notify
+ExecStartPre=/bin/sh -c 'mount | grep -q "/mnt/b2" && (/bin/fusermount -u /mnt/b2 || /bin/umount -l /mnt/b2) || true'
 ExecStart=/usr/bin/rclone mount b2crypt: /mnt/b2 --allow-other --transfers 16 --checkers 16 --b2-chunk-size 96M --vfs-cache-mode writes --buffer-size 64M
+ExecStop=/bin/fusermount -u /mnt/b2
 Restart=on-failure
+RestartSec=5
+StartLimitInterval=60
+StartLimitBurst=3
 User=darren
 
 [Install]
