@@ -4,13 +4,13 @@ After=rclone-mount.service network-online.target
 Requires=rclone-mount.service
 
 [Service]
-Type=oneshot
-ExecStartPre=/bin/bash -c "until mountpoint -q /mnt/b2 && [ -d /mnt/b2/downloads ]; do sleep 1; done"
-ExecStart=/bin/mount --bind /mnt/b2/downloads /home/darren/media-stack/downloads
-ExecStartPost=/bin/sleep 1
-ExecStartPost=/bin/mountpoint -q /home/darren/media-stack/downloads
-RemainAfterExit=yes
-TimeoutStartSec=60
+Type=simple
+ExecStartPre=/bin/sh -c 'for m in /home/darren/media-stack/downloads /srv/chroot/syncuser/home/syncuser/media-stack/downloads; do mount | grep -q "$m" && (/bin/sudo /bin/umount "$m" || /bin/sudo /bin/umount -l "$m") || true; done'
+ExecStart=/bin/bash -c 'until mountpoint -q /mnt/b2 && [ -d /mnt/b2/downloads ]; do sleep 1; done; /bin/sudo /bin/mount --bind /mnt/b2/downloads /home/darren/media-stack/downloads; /bin/sudo /bin/mount --bind /mnt/b2/downloads /srv/chroot/syncuser/home/syncuser/media-stack/downloads; while true; do for m in /home/darren/media-stack/downloads /srv/chroot/syncuser/home/syncuser/media-stack/downloads; do if ! mountpoint -q "$m"; then /bin/sudo /bin/umount "$m" 2>/dev/null || true; /bin/sudo /bin/mount --bind /mnt/b2/downloads "$m"; fi; done; sleep 15; done'
+ExecStop=/bin/sh -c '/bin/sudo /bin/umount /srv/chroot/syncuser/home/syncuser/media-stack/downloads; /bin/sudo /bin/umount /home/darren/media-stack/downloads'
+Restart=on-failure
+RestartSec=5
+User=darren
 
 [Install]
 WantedBy=multi-user.target
